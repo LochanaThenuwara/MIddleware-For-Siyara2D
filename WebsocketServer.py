@@ -1,6 +1,7 @@
 from autobahn.twisted.websocket import WebSocketServerProtocol, \
     WebSocketServerFactory
 import json
+import rethinkdb as r
 import TCPSocket
 
 subscribers={}
@@ -26,6 +27,13 @@ class MyServerProtocol(WebSocketServerProtocol):
         n = json.dumps(m)
         o = json.loads(n)
 
+        db_connection = r.connect("localhost", 28015)
+        data = r.db("Siyara2D").table("Vessels").run(db_connection)
+        for vessel in data:
+            print vessel
+            self.sendMessage(json.dumps(vessel))
+
+
         # if isBinary:
         #     print("Binary message received: {0} bytes".format(len(payload)))
         # else:
@@ -49,6 +57,9 @@ class MyServerProtocol(WebSocketServerProtocol):
             print("Binary message received: {0} bytes".format(len(payload)))
         else:
             print("Text message received: {0}".format(payload.decode('utf8')))
+            # request = json.dumps(json.loads(payload))
+            # print request[0],"###############################"
+
 
         # # echo back message verbatim
         # payload=json.dumps(o, ensure_ascii = False).encode('utf8')
